@@ -1,5 +1,7 @@
+import random
 import urllib
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import send_mail
 from django.db import models
@@ -299,8 +301,10 @@ class User(models.Model):
         hashing formats behind the scenes.
         """
         def setter(raw_password):
-            self.set_password(raw_password)
-            self.save()
+            if random.random() < float(getattr(settings,
+                                               'PASSWORD_UPGRADE_RATE', '1')):
+                self.set_password(raw_password)
+                self.save()
         return check_password(raw_password, self.password, setter)
 
     def set_unusable_password(self):
